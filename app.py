@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 import os
-from urllib.parse import quote_plus
 from uuid import uuid4
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
@@ -16,29 +15,10 @@ import random
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
-
-
-def resolve_database_uri():
-    direct_uri = os.getenv("DATABASE_URL", "").strip()
-    if direct_uri:
-        return direct_uri
-
-    db_host = os.getenv("DB_HOST", "").strip()
-    db_user = os.getenv("DB_USER", "").strip()
-    db_password = os.getenv("DB_PASSWORD", "").strip()
-    db_name = os.getenv("DB_NAME", "").strip()
-    db_port = os.getenv("DB_PORT", "3306").strip() or "3306"
-    if db_host and db_user and db_name:
-        encoded_password = quote_plus(db_password)
-        return f"mysql+pymysql://{db_user}:{encoded_password}@{db_host}:{db_port}/{db_name}"
-
-    return "sqlite:///calculator.db"
-
-
-app.config["SQLALCHEMY_DATABASE_URI"] = resolve_database_uri()
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///calculator.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "false").strip().lower() in ("1", "true", "yes", "on")
-app.logger.info("Active database URI: %s", app.config["SQLALCHEMY_DATABASE_URI"])
+app.logger.info("Active database URI: sqlite:///calculator.db")
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024
@@ -47,9 +27,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
-
-with app.app_context():
-    db.create_all()
+db_initialized = False
 
 PROGRAMMER_BASES = {
     "HEX": 16,
@@ -61,7 +39,7 @@ PROGRAMMER_WORD_SIZES = {8, 16, 32, 64}
 
 
 class User(UserMixin, db.Model):
-    __tablename__ = "user"
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     display_name = db.Column(db.String(150), nullable=False, default="")
@@ -73,7 +51,7 @@ class User(UserMixin, db.Model):
 class History(db.Model):
     __tablename__ = "history"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     mode = db.Column(db.String(32), nullable=False, index=True)
     equation = db.Column(db.Text, nullable=False)
     result = db.Column(db.Text, nullable=False)
@@ -93,6 +71,16 @@ def unauthorized_handler():
     if request.path.startswith(api_paths):
         return jsonify({"error": "Unauthorized"}), 401
     return redirect(url_for("login"))
+
+
+@app.before_request
+def ensure_database_initialized():
+    global db_initialized
+    if db_initialized:
+        return
+    with app.app_context():
+        db.create_all()
+    db_initialized = True
 
 
 def save_history_entry(user_id, mode, equation, result, context_base=None, context_word_size=None):
