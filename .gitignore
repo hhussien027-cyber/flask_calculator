@@ -1,0 +1,25 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment files
+.env
+.env.*
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test and tooling cache
+.pytest_cache/
+.mypy_cache/
+
+# Local uploads/runtime artifacts
+static/uploads/*
+!static/uploads/.gitkeep
+instance/

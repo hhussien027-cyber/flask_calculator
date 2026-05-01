@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profile - Material Flask Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-page">
+    <main class="login-shell profile-shell">
+        <section class="login-card">
+            <h1 class="login-title">Profile</h1>
+            <p class="login-subtitle">Manage your account details.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{{ 'login-success' if category == 'success' else 'login-error' }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="profile-preview no-select">
+                <img
+                    id="profile-preview-image"
+                    class="profile-preview-avatar{% if not profile_image %} hidden-profile-avatar{% endif %}"
+                    src="{% if profile_image %}{{ url_for('static', filename='uploads/' + profile_image) }}{% endif %}"
+                    alt="Profile image"
+                >
+                <div id="profile-preview-fallback" class="profile-preview-avatar-fallback{% if profile_image %} hidden-profile-avatar{% endif %}">{{ (display_name[:1] or "U")|upper }}</div>
+                <div class="profile-preview-name">{{ display_name }}</div>
+            </div>
+
+            <form class="login-form" method="post" action="{{ url_for('profile') }}" enctype="multipart/form-data">
+                <label class="login-field-label no-select" for="display_name">Display Name</label>
+                <input id="display_name" class="login-input" type="text" name="display_name" value="{{ display_name }}" required>
+
+                <label class="login-field-label no-select" for="profile_image">Profile Picture</label>
+                <input id="profile_image" class="profile-file-input-hidden" type="file" name="profile_image" accept=".png,.jpg,.jpeg">
+                <div class="profile-upload-row no-select">
+                    <label for="profile_image" class="profile-upload-btn">Upload Image</label>
+                    <span id="profile-file-name" class="profile-file-name">No file selected</span>
+                </div>
+
+                <button class="login-submit profile-save-btn no-select" type="submit">Save Profile</button>
+            </form>
+
+            <div class="profile-actions">
+                <a class="profile-action-btn profile-action-btn-outline no-select" href="{{ url_for('verify_username_password') }}">Change Username</a>
+                <a class="profile-action-btn profile-action-btn-outline no-select" href="{{ url_for('change_password') }}">Change Password</a>
+            </div>
+
+            <p class="login-help"><a class="login-link" href="{{ url_for('index') }}">Back to Calculator</a></p>
+        </section>
+    </main>
+    <script>
+        const profileImageInput = document.getElementById("profile_image");
+        const profilePreviewImage = document.getElementById("profile-preview-image");
+        const profilePreviewFallback = document.getElementById("profile-preview-fallback");
+        const profileFileName = document.getElementById("profile-file-name");
+
+        profileImageInput.addEventListener("change", () => {
+            const selectedFile = profileImageInput.files && profileImageInput.files[0];
+            if (!selectedFile) {
+                profileFileName.textContent = "No file selected";
+                return;
+            }
+
+            profileFileName.textContent = selectedFile.name;
+            const objectUrl = URL.createObjectURL(selectedFile);
+            profilePreviewImage.src = objectUrl;
+            profilePreviewImage.classList.remove("hidden-profile-avatar");
+            profilePreviewFallback.classList.add("hidden-profile-avatar");
+            profilePreviewImage.onload = () => URL.revokeObjectURL(objectUrl);
+        });
+    </script>
+</body>
+</html>

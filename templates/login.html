@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Material Flask Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-card">
+            <h1 class="login-title">Welcome Back</h1>
+            <p class="login-subtitle">Sign in to continue to your calculator.</p>
+
+            {% if error_message %}
+                <div class="login-error">{{ error_message }}</div>
+            {% endif %}
+
+            <form class="login-form" method="post" action="{{ url_for('login') }}">
+                <label class="login-field-label" for="username">Username</label>
+                <input id="username" class="login-input" type="text" name="username" autocomplete="username" required>
+
+                <label class="login-field-label" for="password">Password</label>
+                <div class="password-field-wrap">
+                    <input id="password" class="login-input password-input" type="password" name="password" autocomplete="current-password" required>
+                    <button id="toggle-password-btn" class="password-toggle-btn" type="button" aria-label="Show password" aria-pressed="false">Show</button>
+                </div>
+
+                <button class="login-submit" type="submit">Login</button>
+            </form>
+
+            <p class="login-help">Demo credentials: admin / 123</p>
+            <p class="login-help">No account? <a class="login-link" href="{{ url_for('signup') }}">Create one</a></p>
+        </section>
+    </main>
+    <script>
+        const passwordInput = document.getElementById("password");
+        const togglePasswordButton = document.getElementById("toggle-password-btn");
+
+        togglePasswordButton.addEventListener("click", () => {
+            const shouldShowPassword = passwordInput.type === "password";
+            passwordInput.type = shouldShowPassword ? "text" : "password";
+            togglePasswordButton.textContent = shouldShowPassword ? "Hide" : "Show";
+            togglePasswordButton.setAttribute("aria-label", shouldShowPassword ? "Hide password" : "Show password");
+            togglePasswordButton.setAttribute("aria-pressed", shouldShowPassword ? "true" : "false");
+            passwordInput.focus();
+        });
+    </script>
+</body>
+</html>

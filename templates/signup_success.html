@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registration Successful - Material Flask Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-card signup-success-card">
+            <div class="signup-success-icon-wrap" aria-hidden="true">
+                <div class="signup-success-icon">
+                    <span class="signup-success-check"></span>
+                </div>
+            </div>
+            <h1 class="login-title">Registration Successful</h1>
+            <p class="login-subtitle signup-success-message">Account created successfully! You can now log in to save your history.</p>
+            <a class="login-submit signup-success-btn" href="{{ url_for('login') }}">Go to Login</a>
+        </section>
+    </main>
+</body>
+</html>
