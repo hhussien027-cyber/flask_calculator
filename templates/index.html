@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="0DEihw7S-AWpg8g6nxEyihVcq88S2mO67OONlaoVO3c" />
-    <title>Material Flask Calculator</title>
+    <title>AL-Calculator | Fast Online Web Calculator with History</title>
+    <meta name="description" content="A reliable and simple online web calculator built with Flask. Features include user accounts, secure login, and a persistent calculation history.">
+    <meta name="keywords" content="calculator, online calculator, web calculator, flask calculator, python web app, calculation history, simple calculator, math tool, free calculator">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <h1 class="seo-main-heading">Web Calculator</h1>
     <a href="{{ url_for('profile') }}" class="profile-snippet" aria-label="Open profile">
         {% if current_user.profile_image %}
             <img class="profile-snippet-avatar" src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}" alt="Profile image">
