@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://al-calculator-b9cfg3gkbpfvhsar.centralus-01.azurewebsites.net

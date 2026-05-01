@@ -146,6 +146,16 @@ def google_site_verification_file():
     return send_from_directory(app.root_path, "googleb0243657fa846af6.html")
 
 
+@app.route("/sitemap.xml")
+def sitemap_file():
+    return send_from_directory(app.root_path, "sitemap.xml", mimetype="application/xml")
+
+
+@app.route("/robots.txt")
+def robots_file():
+    return send_from_directory(app.root_path, "robots.txt", mimetype="text/plain")
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if current_user.is_authenticated:
