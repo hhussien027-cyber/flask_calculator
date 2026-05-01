@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 import os
+from urllib.parse import quote_plus
 from uuid import uuid4
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import ast
@@ -14,9 +16,29 @@ import random
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///calculator.db"
+
+
+def resolve_database_uri():
+    direct_uri = os.getenv("DATABASE_URL", "").strip()
+    if direct_uri:
+        return direct_uri
+
+    db_host = os.getenv("DB_HOST", "").strip()
+    db_user = os.getenv("DB_USER", "").strip()
+    db_password = os.getenv("DB_PASSWORD", "").strip()
+    db_name = os.getenv("DB_NAME", "").strip()
+    db_port = os.getenv("DB_PORT", "3306").strip() or "3306"
+    if db_host and db_user and db_name:
+        encoded_password = quote_plus(db_password)
+        return f"mysql+pymysql://{db_user}:{encoded_password}@{db_host}:{db_port}/{db_name}"
+
+    return "sqlite:///calculator.db"
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = resolve_database_uri()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "false").strip().lower() in ("1", "true", "yes", "on")
+app.logger.info("Active database URI: %s", app.config["SQLALCHEMY_DATABASE_URI"])
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024
@@ -39,6 +61,7 @@ PROGRAMMER_WORD_SIZES = {8, 16, 32, 64}
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     display_name = db.Column(db.String(150), nullable=False, default="")
@@ -48,6 +71,7 @@ class User(UserMixin, db.Model):
 
 
 class History(db.Model):
+    __tablename__ = "history"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     mode = db.Column(db.String(32), nullable=False, index=True)
@@ -81,7 +105,16 @@ def save_history_entry(user_id, mode, equation, result, context_base=None, conte
         context_word_size=context_word_size
     )
     db.session.add(entry)
-    db.session.commit()
+    commit_session("save_history_entry")
+
+
+def commit_session(operation_name):
+    try:
+        db.session.commit()
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        app.logger.exception("Database commit failed during %s: %s", operation_name, error)
+        raise
 
 
 def get_user_display_name(user):
@@ -156,6 +189,23 @@ def robots_file():
     return send_from_directory(app.root_path, "robots.txt", mimetype="text/plain")
 
 
+@app.route("/health/db")
+def health_db():
+    try:
+        ping_value = db.session.execute(text("SELECT 1")).scalar()
+        return jsonify({
+            "ok": True,
+            "database": "connected",
+            "ping": int(ping_value) if ping_value is not None else None
+        }), 200
+    except SQLAlchemyError as error:
+        app.logger.exception("Database health check failed: %s", error)
+        return jsonify({
+            "ok": False,
+            "database": "error"
+        }), 500
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if current_user.is_authenticated:
@@ -186,12 +236,15 @@ def signup():
             )
             try:
                 db.session.add(new_user)
-                db.session.commit()
+                commit_session("signup")
                 session["signup_success_ready"] = True
                 return redirect(url_for("signup_success"))
             except IntegrityError:
                 db.session.rollback()
                 flash("Username already exists. Please choose another one.", "error")
+                return redirect(url_for("signup"))
+            except SQLAlchemyError:
+                flash("Database error while creating account. Please try again.", "error")
                 return redirect(url_for("signup"))
 
     return render_template("signup.html", error_message=error_message, success_message=success_message)
@@ -246,7 +299,11 @@ def profile():
             if previous_image and previous_image != unique_filename:
                 remove_profile_image_file(previous_image)
 
-        db.session.commit()
+        try:
+            commit_session("profile_update")
+        except SQLAlchemyError:
+            flash("Database error while saving profile. Please try again.", "error")
+            return redirect(url_for("profile"))
         flash("Profile updated successfully.", "success")
         return redirect(url_for("profile"))
 
@@ -324,7 +381,11 @@ def change_password():
             flash("New password must be different from the current password.", "error")
         else:
             current_user.password_hash = generate_password_hash(new_password)
-            db.session.commit()
+            try:
+                commit_session("change_password")
+            except SQLAlchemyError:
+                flash("Database error while updating password. Please try again.", "error")
+                return redirect(url_for("change_password"))
             flash("Password updated successfully.", "success")
             return redirect(url_for("change_password"))
 
@@ -414,8 +475,11 @@ def clear_history():
     if mode not in ("standard", "programmer"):
         return jsonify({"error": "Invalid mode"}), 400
 
-    History.query.filter_by(user_id=current_user.id, mode=mode).delete()
-    db.session.commit()
+    try:
+        History.query.filter_by(user_id=current_user.id, mode=mode).delete()
+        commit_session("clear_history")
+    except SQLAlchemyError:
+        return jsonify({"error": "Database write error"}), 500
     return jsonify({"ok": True})
 
 
@@ -847,7 +911,7 @@ def initialize_database():
                     password_hash=generate_password_hash("123")
                 )
             )
-            db.session.commit()
+            commit_session("initialize_database_admin_seed")
 
 
 with app.app_context():

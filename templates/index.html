@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=1200">
     <meta name="google-site-verification" content="0DEihw7S-AWpg8g6nxEyihVcq88S2mO67OONlaoVO3c" />
     <title>AL-Calculator | Fast Online Web Calculator with History</title>
     <meta name="description" content="A reliable and simple online web calculator built with Flask. Features include user accounts, secure login, and a persistent calculation history.">
@@ -22,6 +22,27 @@
                 "priceCurrency": "USD"
             }
         }
+    </script>
+    <script>
+        (function () {
+            const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i;
+            const isMobileDevice = mobileRegex.test(navigator.userAgent || "");
+            if (!isMobileDevice) {
+                return;
+            }
+            window.onload = function () {
+                document.body.innerHTML = `
+                    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 20% 20%, #1a1f45, #090b1a 60%, #05060d 100%);font-family:Roboto,Segoe UI,sans-serif;">
+                        <div style="width:100%;max-width:560px;background:linear-gradient(160deg,#141a3d,#121634);border:1px solid #2b3264;border-radius:20px;padding:26px 22px;box-shadow:0 20px 60px rgba(0,0,0,.45);color:#edf1ff;text-align:center;">
+                            <h1 style="font-size:1.5rem;margin:0 0 12px 0;">Desktop Access Only</h1>
+                            <p style="margin:0;color:#c7d2ff;line-height:1.6;font-size:1rem;">
+                                This engineering tool is optimized for laptop/desktop displays to ensure calculation accuracy and UI stability. Please switch to a computer.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            };
+        })();
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
