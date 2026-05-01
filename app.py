@@ -14,10 +14,7 @@ import random
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL",
-    "mysql+pymysql://root:@localhost/calculator_db"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///calculator.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "false").strip().lower() in ("1", "true", "yes", "on")
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
@@ -28,6 +25,9 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
+
+with app.app_context():
+    db.create_all()
 
 PROGRAMMER_BASES = {
     "HEX": 16,

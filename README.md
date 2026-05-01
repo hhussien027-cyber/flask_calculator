@@ -6,7 +6,7 @@ A Material Design inspired Flask calculator application with:
 - Programmer mode (HEX/DEC/BIN/OCT + bitwise operations)
 - User authentication (signup/login/logout)
 - Profile management (display name, avatar upload, username/password updates)
-- Per-user calculation history stored in MySQL
+- Per-user calculation history stored in SQLite
 
 ## Tech Stack
 
@@ -14,7 +14,7 @@ A Material Design inspired Flask calculator application with:
 - Flask-Login
 - Flask-SQLAlchemy
 - Flask-Migrate
-- MySQL (via PyMySQL)
+- SQLite
 
 ## Local Setup
 
@@ -25,19 +25,17 @@ A Material Design inspired Flask calculator application with:
    pip install -r requirements.txt
    ```
 
-3. Create a MySQL database (example: `calculator_db`).
-4. Set environment variables:
+3. Set environment variables:
 
-   - `DATABASE_URL` (example: `mysql+pymysql://root:password@localhost/calculator_db`)
    - `SECRET_KEY` (recommended for production)
 
-5. Run migrations:
+4. Run migrations:
 
    ```bash
    flask db upgrade
    ```
 
-6. Start the app:
+5. Start the app:
 
    ```bash
    python app.py
@@ -56,3 +54,4 @@ gunicorn -w 2 -b 0.0.0.0:8000 app:app
 - This project is designed to run on Linux servers.
 - Avoid committing `.env`, local `.db` files, virtual environments, or uploaded user images.
 - Use a production WSGI server (for example, Gunicorn) behind a reverse proxy in production.
+- By default this app uses `sqlite:///calculator.db`.
