@@ -835,6 +835,10 @@ def initialize_database():
             db.session.commit()
 
 
+with app.app_context():
+    db.create_all()
+
+
 if __name__ == "__main__":
     initialize_database()
     app.run(debug=app.config["DEBUG"])
