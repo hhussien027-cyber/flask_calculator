@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import os
 from uuid import uuid4
-from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -139,6 +139,11 @@ def login():
         error_message = "Invalid username or password."
 
     return render_template("login.html", error_message=error_message)
+
+
+@app.route("/googleb0243657fa846af6.html")
+def google_site_verification_file():
+    return send_from_directory(app.root_path, "googleb0243657fa846af6.html")
 
 
 @app.route("/signup", methods=["GET", "POST"])
