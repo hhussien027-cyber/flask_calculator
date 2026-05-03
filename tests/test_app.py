@@ -2,8 +2,6 @@ import unittest
 import io
 import os
 import tempfile
-
-from werkzeug.security import check_password_hash, generate_password_hash
 import app as app_module
 from app import History, User, app, db
 
@@ -17,7 +15,7 @@ class CalculatorApiTests(unittest.TestCase):
             db.session.remove()
             db.drop_all()
             db.create_all()
-            db.session.add(User(username="admin", password_hash=generate_password_hash("123")))
+            db.session.add(User(username="admin", password="123"))
             db.session.commit()
         self.login()
 
@@ -85,7 +83,7 @@ class CalculatorApiTests(unittest.TestCase):
         with app.app_context():
             user = User.query.filter_by(username="admin").first()
             self.assertIsNotNone(user)
-            self.assertTrue(check_password_hash(user.password_hash, "newpass123"))
+            self.assertEqual(user.password, "newpass123")
 
     def test_settings_rejects_wrong_current_password(self):
         response = self.client.post(
@@ -102,7 +100,7 @@ class CalculatorApiTests(unittest.TestCase):
         with app.app_context():
             user = User.query.filter_by(username="admin").first()
             self.assertIsNotNone(user)
-            self.assertTrue(check_password_hash(user.password_hash, "123"))
+            self.assertEqual(user.password, "123")
 
     def test_profile_updates_display_name(self):
         response = self.client.post(
@@ -308,6 +306,14 @@ class CalculatorApiTests(unittest.TestCase):
         response = self.post_equation("sqrt(9)+5^2+2^3+abs(-4)+factorial(5)+e")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["result"], 162.718281828459)
+
+    def test_permutation_and_combination(self):
+        response = self.post_equation("nPr(7, 3)")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["result"], 210)
+        response = self.post_equation("nCr(10, 3)")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["result"], 120)
 
     def test_nth_root_function(self):
         response = self.post_equation("root(8,3)")

@@ -31,10 +31,16 @@
                 <input id="username" class="login-input" type="text" name="username" autocomplete="username" required>
 
                 <label class="login-field-label" for="password">Password</label>
-                <input id="password" class="login-input" type="password" name="password" autocomplete="new-password" required>
+                <div class="password-field-wrap">
+                    <input id="password" class="login-input password-input" type="password" name="password" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle-btn" data-target="password" aria-label="Show password" aria-pressed="false">Show</button>
+                </div>
 
                 <label class="login-field-label" for="confirm_password">Confirm Password</label>
-                <input id="confirm_password" class="login-input" type="password" name="confirm_password" autocomplete="new-password" required>
+                <div class="password-field-wrap">
+                    <input id="confirm_password" class="login-input password-input" type="password" name="confirm_password" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle-btn" data-target="confirm_password" aria-label="Show password" aria-pressed="false">Show</button>
+                </div>
 
                 <button class="login-submit" type="submit">Sign Up</button>
             </form>
@@ -42,5 +48,22 @@
             <p class="login-help">Already have an account? <a class="login-link" href="{{ url_for('login') }}">Sign in</a></p>
         </section>
     </main>
+    <script>
+        document.querySelectorAll(".password-toggle-btn").forEach((button) => {
+            button.addEventListener("click", () => {
+                const targetId = button.getAttribute("data-target");
+                const input = document.getElementById(targetId);
+                if (!input) {
+                    return;
+                }
+                const shouldShowPassword = input.type === "password";
+                input.type = shouldShowPassword ? "text" : "password";
+                button.textContent = shouldShowPassword ? "Hide" : "Show";
+                button.setAttribute("aria-label", shouldShowPassword ? "Hide password" : "Show password");
+                button.setAttribute("aria-pressed", shouldShowPassword ? "true" : "false");
+                input.focus();
+            });
+        });
+    </script>
 </body>
 </html>

@@ -4,26 +4,23 @@ from uuid import uuid4
 from flask import Flask, flash, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import ast
 import math
 import random
-
+from db_config import db, configure_database
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///calculator.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "false").strip().lower() in ("1", "true", "yes", "on")
-app.logger.info("Active database URI: sqlite:///calculator.db")
+configure_database(app)
+app.logger.info("Active database URI: %s", app.config["SQLALCHEMY_DATABASE_URI"])
 UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads")
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024
 
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -35,7 +32,7 @@ PROGRAMMER_BASES = {
     "BIN": 2,
     "OCT": 8
 }
-PROGRAMMER_WORD_SIZES = {8, 16, 32, 64}
+PROGRAMMER_WORD_SIZES = {8, 16, 32}
 
 
 class User(UserMixin, db.Model):
@@ -44,7 +41,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     display_name = db.Column(db.String(150), nullable=False, default="")
     profile_image = db.Column(db.String(255), nullable=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     history_entries = db.relationship("History", backref="user", lazy=True, cascade="all, delete-orphan")
 
 
@@ -154,7 +151,7 @@ def login():
         username = str(request.form.get("username", "")).strip()
         password = str(request.form.get("password", "")).strip()
         user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
+        if user and user.password == password:
             login_user(user)
             return redirect(url_for("index"))
         error_message = "Invalid username or password."
@@ -220,7 +217,7 @@ def signup():
             new_user = User(
                 username=form_username,
                 display_name=form_username,
-                password_hash=generate_password_hash(password)
+                password=password
             )
             try:
                 db.session.add(new_user)
@@ -307,7 +304,7 @@ def profile():
 def verify_username_password():
     if request.method == "POST":
         current_password = str(request.form.get("current_password", "")).strip()
-        if not check_password_hash(current_user.password_hash, current_password):
+        if current_user.password != current_password:
             flash("Current password is incorrect.", "error")
             return redirect(url_for("verify_username_password"))
         session["username_change_verified"] = True
@@ -359,16 +356,16 @@ def change_password():
         new_password = str(request.form.get("new_password", "")).strip()
         confirm_new_password = str(request.form.get("confirm_new_password", "")).strip()
 
-        if not check_password_hash(current_user.password_hash, current_password):
+        if current_user.password != current_password:
             flash("Current password is incorrect.", "error")
         elif len(new_password) < 3:
             flash("New password must be at least 3 characters.", "error")
         elif new_password != confirm_new_password:
             flash("New password and confirmation do not match.", "error")
-        elif check_password_hash(current_user.password_hash, new_password):
+        elif current_user.password == new_password:
             flash("New password must be different from the current password.", "error")
         else:
-            current_user.password_hash = generate_password_hash(new_password)
+            current_user.password = new_password
             try:
                 commit_session("change_password")
             except SQLAlchemyError:
@@ -417,16 +414,18 @@ def calculate_programmer():
 
     try:
         word_size = int(data.get("word_size", 32))
+        skip_history = bool(data.get("skip_history"))
         result = evaluate_programmer_equation(equation, number_base, word_size)
         formatted = format_programmer_result(result, number_base)
-        save_history_entry(
-            current_user.id,
-            "programmer",
-            equation,
-            formatted,
-            context_base=number_base,
-            context_word_size=word_size
-        )
+        if not skip_history:
+            save_history_entry(
+                current_user.id,
+                "programmer",
+                equation,
+                formatted,
+                context_base=number_base,
+                context_word_size=word_size
+            )
         return jsonify({
             "result": formatted,
             "base": number_base,
@@ -596,6 +595,30 @@ def safe_factorial(value):
     return math.factorial(int(value))
 
 
+def safe_perm(n, r):
+    nf = float(n)
+    rf = float(r)
+    if not nf.is_integer() or not rf.is_integer():
+        raise ValueError("Invalid permutation input")
+    ni = int(nf)
+    ri = int(rf)
+    if ri < 0 or ni < 0 or ri > ni:
+        raise ValueError("Invalid permutation input")
+    return math.factorial(ni) // math.factorial(ni - ri)
+
+
+def safe_comb(n, r):
+    nf = float(n)
+    rf = float(r)
+    if not nf.is_integer() or not rf.is_integer():
+        raise ValueError("Invalid combination input")
+    ni = int(nf)
+    ri = int(rf)
+    if ri < 0 or ni < 0 or ri > ni:
+        raise ValueError("Invalid combination input")
+    return math.comb(ni, ri)
+
+
 def random_number():
     return random.random()
 
@@ -686,6 +709,8 @@ def build_allowed_functions(angle_mode):
         "root": (nth_root, 2),
         "abs": (abs, 1),
         "factorial": (safe_factorial, 1),
+        "nPr": (safe_perm, 2),
+        "nCr": (safe_comb, 2),
         "rand": (random_number, 0)
     }
 
@@ -896,7 +921,7 @@ def initialize_database():
                 User(
                     username="admin",
                     display_name="Admin",
-                    password_hash=generate_password_hash("123")
+                    password="123"
                 )
             )
             commit_session("initialize_database_admin_seed")
@@ -909,3 +934,4 @@ with app.app_context():
 if __name__ == "__main__":
     initialize_database()
     app.run(debug=app.config["DEBUG"])
+    

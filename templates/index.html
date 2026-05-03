@@ -23,27 +23,6 @@
             }
         }
     </script>
-    <script>
-        (function () {
-            const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i;
-            const isMobileDevice = mobileRegex.test(navigator.userAgent || "");
-            if (!isMobileDevice) {
-                return;
-            }
-            window.onload = function () {
-                document.body.innerHTML = `
-                    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 20% 20%, #1a1f45, #090b1a 60%, #05060d 100%);font-family:Roboto,Segoe UI,sans-serif;">
-                        <div style="width:100%;max-width:560px;background:linear-gradient(160deg,#141a3d,#121634);border:1px solid #2b3264;border-radius:20px;padding:26px 22px;box-shadow:0 20px 60px rgba(0,0,0,.45);color:#edf1ff;text-align:center;">
-                            <h1 style="font-size:1.5rem;margin:0 0 12px 0;">Desktop Access Only</h1>
-                            <p style="margin:0;color:#c7d2ff;line-height:1.6;font-size:1rem;">
-                                This engineering tool is optimized for laptop/desktop displays to ensure calculation accuracy and UI stability. Please switch to a computer.
-                            </p>
-                        </div>
-                    </div>
-                `;
-            };
-        })();
-    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -97,7 +76,11 @@
     <main class="calculator">
         <div class="display-wrap">
             <div class="display-label-row">
-                <div id="display-label" class="display-label">Scientific Calculator (DEG)</div>
+                <div id="display-label" class="display-label">Scientific Calculator</div>
+                <div id="scientific-status-bar" class="status-indicators">
+                    <span id="angle-indicator" class="programmer-floor-badge floor-primary scientific-status-pill">DEG</span>
+                    <span id="shift-indicator" class="programmer-floor-badge floor-primary scientific-status-pill">1st</span>
+                </div>
                 <div id="programmer-header-tools" class="programmer-header-tools hidden-programmer-tools">
                     <span id="programmer-floor-badge" class="programmer-floor-badge floor-primary">1st</span>
                     <span id="programmer-base-indicator" class="programmer-base-indicator">DEC</span>
@@ -105,7 +88,6 @@
                         <option value="8">8-bit</option>
                         <option value="16">16-bit</option>
                         <option value="32" selected>32-bit</option>
-                        <option value="64">64-bit</option>
                     </select>
                 </div>
             </div>
@@ -124,38 +106,38 @@
                     <div class="cluster action-cluster">
                         <button class="btn utility" data-action="clear">C</button>
                         <button class="btn utility" data-action="backspace">⌫</button>
-                        <button class="btn operator" data-action="insert" data-value="+">+</button>
-                        <button class="btn operator" data-action="insert" data-value="-">-</button>
-                        <button class="btn operator" data-action="insert" data-value="*">*</button>
-                        <button class="btn operator" data-action="insert" data-value="/">/</button>
+                        <button class="btn mode second-toggle" data-action="show-scientific">2nd</button>
+                        <button class="btn mode" data-action="insert" data-value="ln(">ln</button>
+                        <button class="btn mode" data-action="insert" data-value="log(">log</button>
+                        <button class="btn mode" data-action="insert" data-value="π">π</button>
                     </div>
                 </div>
                 <div class="numpad-wrap">
                     <button class="btn number" data-action="insert" data-value="7">7</button>
                     <button class="btn number" data-action="insert" data-value="8">8</button>
                     <button class="btn number" data-action="insert" data-value="9">9</button>
-                    <button class="btn mode" data-action="insert" data-value="π">π</button>
+                    <button class="btn operator" data-action="insert" data-value="+">+</button>
                     <button class="btn number" data-action="insert" data-value="4">4</button>
                     <button class="btn number" data-action="insert" data-value="5">5</button>
                     <button class="btn number" data-action="insert" data-value="6">6</button>
-                    <button class="btn mode" data-action="insert" data-value="log(">log</button>
+                    <button class="btn operator" data-action="insert" data-value="-">-</button>
                     <button class="btn number" data-action="insert" data-value="1">1</button>
                     <button class="btn number" data-action="insert" data-value="2">2</button>
                     <button class="btn number" data-action="insert" data-value="3">3</button>
-                    <button class="btn mode" data-action="insert" data-value="ln(">ln</button>
+                    <button class="btn operator" data-action="insert" data-value="*">*</button>
                     <button class="btn number" data-action="insert" data-value="0">0</button>
                     <button class="btn number" data-action="insert" data-value=".">.</button>
-                    <button class="btn mode second-toggle" data-action="show-scientific">2nd</button>
                     <button class="btn equals equals-main" data-action="equals">=</button>
+                    <button class="btn operator" data-action="insert" data-value="/">/</button>
                 </div>
             </div>
 
             <div class="floor floor-two hidden">
-                <button class="btn utility switch-btn" data-action="show-main">&larr; 1st</button>
+                <button class="btn operator" data-action="insert" data-value="nPr(">nPr</button>
                 <button class="btn mode" data-action="toggle-inv">INV</button>
                 <button class="btn mode" data-action="toggle-hyp">HYP</button>
-                <button class="btn mode std-btn" data-action="reset-trig">STD</button>
                 <button class="btn mode" data-action="toggle-angle-mode">DEG</button>
+                <button class="btn utility switch-btn" data-action="show-main">&larr; 1st</button>
                 <button class="btn trig" data-action="trig" data-base="sin">sin</button>
                 <button class="btn trig" data-action="trig" data-base="cos">cos</button>
                 <button class="btn trig" data-action="trig" data-base="tan">tan</button>
@@ -165,13 +147,13 @@
                 <button class="btn operator" data-action="insert" data-value="exp(">exp</button>
                 <button class="btn operator" data-action="insert" data-value="^">^</button>
                 <button class="btn operator" data-action="insert" data-value="√(">√</button>
-                <button class="btn mode" data-action="insert" data-value="e">e</button>
+                <button class="btn operator" data-action="insert" data-value="nCr(">nCr</button>
                 <button class="btn operator" data-action="smart-wrap" data-wrap="power2">x²</button>
                 <button class="btn operator" data-action="smart-wrap" data-wrap="power3">x³</button>
                 <button class="btn operator" data-action="smart-wrap" data-wrap="reciprocal">1/x</button>
                 <button class="btn mode" data-action="smart-wrap" data-wrap="absolute">|x|</button>
                 <button class="btn mode" data-action="smart-wrap" data-wrap="factorial">n!</button>
-                <button class="btn operator" data-action="insert" data-value="%">%</button>
+                <button class="btn operator" data-action="insert" data-value="%">MOD</button>
                 <button class="btn utility" data-action="insert" data-value="(">(</button>
                 <button class="btn utility" data-action="insert" data-value=")">)</button>
                 <button class="btn mode" data-action="insert" data-value="rand()">Ran#</button>
@@ -180,11 +162,11 @@
 
             <div class="floor floor-three hidden">
                 <div class="programmer-floor-panel programmer-floor-primary">
-                    <button class="btn utility switch-btn" data-action="toggle-programmer-floor">2nd</button>
+                    <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="OCT">OCT</button>
                     <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="HEX">HEX</button>
                     <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="DEC">DEC</button>
                     <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="BIN">BIN</button>
-                    <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="OCT">OCT</button>
+                    <button class="btn utility switch-btn" data-action="toggle-programmer-floor">2nd</button>
 
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="7">7</button>
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="8">8</button>
@@ -201,8 +183,8 @@
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="1">1</button>
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="2">2</button>
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="3">3</button>
-                    <button class="btn utility" data-action="programmer-backspace">⌫</button>
-                    <button class="btn equals" data-action="programmer-equals">=</button>
+                    <button class="btn operator" data-action="programmer-insert" data-token="%">MOD</button>
+                    <button class="btn mode" data-action="programmer-twos-complement" type="button">2&apos;s</button>
 
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="0">0</button>
                     <button class="btn mode programmer-hex-btn" data-action="programmer-insert" data-token="A">A</button>
@@ -212,15 +194,17 @@
 
                     <button class="btn mode programmer-hex-btn" data-action="programmer-insert" data-token="E">E</button>
                     <button class="btn mode programmer-hex-btn" data-action="programmer-insert" data-token="F">F</button>
+                    <button class="btn equals" data-action="programmer-equals">=</button>
                     <button class="btn utility" data-action="programmer-clear">C</button>
+                    <button class="btn utility" data-action="programmer-backspace">⌫</button>
                 </div>
 
                 <div class="programmer-floor-panel programmer-floor-secondary hidden">
-                    <button class="btn utility switch-btn" data-action="toggle-programmer-floor">1st</button>
+                    <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="OCT">OCT</button>
                     <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="HEX">HEX</button>
                     <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="DEC">DEC</button>
                     <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="BIN">BIN</button>
-                    <button class="btn mode programmer-base-btn" data-action="set-programmer-base" data-base="OCT">OCT</button>
+                    <button class="btn utility switch-btn" data-action="toggle-programmer-floor">1st</button>
 
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="7">7</button>
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="8">8</button>
@@ -237,8 +221,8 @@
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="1">1</button>
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="2">2</button>
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="3">3</button>
-                    <button class="btn operator" data-action="programmer-insert" data-token="LSH">Lsh</button>
-                    <button class="btn operator" data-action="programmer-insert" data-token="RSH">Rsh</button>
+                    <button class="btn operator" data-action="programmer-insert" data-token="LSH">LSH</button>
+                    <button class="btn operator" data-action="programmer-insert" data-token="RSH">RSH</button>
 
                     <button class="btn number programmer-digit-btn" data-action="programmer-insert" data-token="0">0</button>
                     <button class="btn mode programmer-hex-btn" data-action="programmer-insert" data-token="A">A</button>
@@ -248,1207 +232,13 @@
 
                     <button class="btn mode programmer-hex-btn" data-action="programmer-insert" data-token="E">E</button>
                     <button class="btn mode programmer-hex-btn" data-action="programmer-insert" data-token="F">F</button>
+                    <button class="btn equals" data-action="programmer-equals">=</button>
                     <button class="btn utility" data-action="programmer-clear">C</button>
                     <button class="btn utility" data-action="programmer-backspace">⌫</button>
-                    <button class="btn equals" data-action="programmer-equals">=</button>
                 </div>
             </div>
         </div>
     </main>
-
-    <script>
-        const display = document.getElementById("display");
-        const displayLabel = document.getElementById("display-label");
-        const buttons = document.querySelectorAll(".btn");
-        const trigButtons = document.querySelectorAll("[data-action='trig']");
-        const invButton = document.querySelector("[data-action='toggle-inv']");
-        const hypButton = document.querySelector("[data-action='toggle-hyp']");
-        const angleModeButton = document.querySelector("[data-action='toggle-angle-mode']");
-        const floorOne = document.querySelector(".floor-one");
-        const floorTwo = document.querySelector(".floor-two");
-        const floorThree = document.querySelector(".floor-three");
-        const drawerButton = document.getElementById("drawer-button");
-        const drawerOverlay = document.getElementById("drawer-overlay");
-        const navDrawer = document.getElementById("nav-drawer");
-        const drawerTitle = document.getElementById("drawer-title");
-        const drawerBackButton = document.getElementById("drawer-back-button");
-        const drawerCloseButton = document.getElementById("drawer-close-button");
-        const drawerThemeItem = document.getElementById("drawer-theme-item");
-        const drawerHistoryItem = document.getElementById("drawer-history-item");
-        const drawerProgrammerItem = document.getElementById("drawer-programmer-item");
-        const drawerProfileItem = document.getElementById("drawer-profile-item");
-        const drawerLogoutItem = document.getElementById("drawer-logout-item");
-        const drawerMainView = document.getElementById("drawer-main-view");
-        const drawerSubView = document.getElementById("drawer-sub-view");
-        const clearHistoryButton = document.getElementById("clear-history-button");
-        const historyLimitButtons = document.querySelectorAll(".history-limit-pill");
-        const historyList = document.getElementById("history-list");
-        const historyEmpty = document.getElementById("history-empty");
-        const programmerHeaderTools = document.getElementById("programmer-header-tools");
-        const programmerFloorBadge = document.getElementById("programmer-floor-badge");
-        const programmerBaseIndicator = document.getElementById("programmer-base-indicator");
-        const programmerWordSizeSelect = document.getElementById("programmer-word-size-select");
-        const programmerBaseButtons = document.querySelectorAll(".programmer-base-btn");
-        const programmerDigitButtons = document.querySelectorAll(".programmer-digit-btn");
-        const programmerHexButtons = document.querySelectorAll(".programmer-hex-btn");
-        const programmerPrimaryFloor = document.querySelector(".programmer-floor-primary");
-        const programmerSecondaryFloor = document.querySelector(".programmer-floor-secondary");
-
-        const HISTORY_LIMIT_KEY = "calculator_history_limit";
-        const HISTORY_LIMIT_OPTIONS = [20, 50, 100];
-
-        let isInvActive = false;
-        let isHypActive = false;
-        let angleMode = "DEG";
-        let isLightTheme = false;
-        let standardHistory = [];
-        let programmerHistory = [];
-        let historyLimit = 50;
-        let activeFloor = "main";
-        let programmerBase = "DEC";
-        let programmerExpression = "";
-        let programmerWordSize = 32;
-        let isProgrammerSecondFloor = false;
-        let drawerCurrentView = "main";
-        let historyPointer = -1;
-        let historyDraft = "";
-
-        function focusDisplay() {
-            display.focus();
-        }
-
-        function updateThemeMenuText() {
-            drawerThemeItem.textContent = isLightTheme ? "Dark Mode" : "Light Mode";
-        }
-
-        function updateDrawerModeText() {
-            drawerProgrammerItem.textContent = activeFloor === "programmer" ? "Scientific Mode" : "Programmer Mode";
-        }
-
-        function applyTheme() {
-            document.body.classList.toggle("light-theme", isLightTheme);
-            updateThemeMenuText();
-        }
-
-        function loadThemePreference() {
-            const savedTheme = localStorage.getItem("calculator_theme");
-            isLightTheme = savedTheme === "light";
-            applyTheme();
-        }
-
-        function toggleTheme() {
-            isLightTheme = !isLightTheme;
-            localStorage.setItem("calculator_theme", isLightTheme ? "light" : "dark");
-            applyTheme();
-        }
-
-        function toggleDrawer(forceOpen = null) {
-            const shouldOpen = forceOpen === null ? navDrawer.classList.contains("hidden-drawer") : forceOpen;
-            navDrawer.classList.toggle("hidden-drawer", !shouldOpen);
-            drawerOverlay.classList.toggle("hidden-drawer", !shouldOpen);
-            navDrawer.setAttribute("aria-hidden", shouldOpen ? "false" : "true");
-            drawerButton.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
-            if (!shouldOpen) {
-                switchToView("main");
-            }
-        }
-
-        function getHistoryViewTitle() {
-            return getActiveHistoryMode() === "programmer" ? "Programmer History" : "Scientific History";
-        }
-
-        function switchToView(viewName) {
-            const showSubView = viewName === "sub";
-            drawerMainView.classList.toggle("hidden-drawer-view", showSubView);
-            drawerSubView.classList.toggle("hidden-drawer-view", !showSubView);
-            drawerBackButton.classList.toggle("hidden-drawer-back", !showSubView);
-            drawerCurrentView = showSubView ? "sub" : "main";
-            drawerTitle.textContent = showSubView ? getHistoryViewTitle() : "Settings";
-        }
-
-        function getActiveHistoryMode() {
-            return activeFloor === "programmer" ? "programmer" : "standard";
-        }
-
-        function getActiveHistory() {
-            return getActiveHistoryMode() === "programmer" ? programmerHistory : standardHistory;
-        }
-
-        function setActiveHistory(updatedHistory) {
-            if (getActiveHistoryMode() === "programmer") {
-                programmerHistory = updatedHistory;
-            } else {
-                standardHistory = updatedHistory;
-            }
-        }
-
-        async function fetchHistoryFromDb(mode) {
-            const response = await fetch(`/get_history?mode=${encodeURIComponent(mode)}&limit=${historyLimit}`);
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to fetch history");
-            }
-            return Array.isArray(data.history) ? data.history : [];
-        }
-
-        async function refreshHistoryFromDb(mode = null) {
-            if (mode === "standard") {
-                standardHistory = await fetchHistoryFromDb("standard");
-            } else if (mode === "programmer") {
-                programmerHistory = await fetchHistoryFromDb("programmer");
-            } else {
-                const [standardRows, programmerRows] = await Promise.all([
-                    fetchHistoryFromDb("standard"),
-                    fetchHistoryFromDb("programmer")
-                ]);
-                standardHistory = standardRows;
-                programmerHistory = programmerRows;
-            }
-        }
-
-        async function saveHistoryEntryToDb(mode, equation, result, context = null) {
-            const payload = {
-                mode: mode,
-                equation: equation,
-                result: String(result)
-            };
-            if (context) {
-                payload.base = context.base;
-                payload.word_size = context.word_size;
-            }
-            const response = await fetch("/save_history", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Failed to save history");
-            }
-        }
-
-        function resetEquationNavigation() {
-            historyPointer = -1;
-            historyDraft = "";
-        }
-
-        function getModeHistoryFromStorage(mode) {
-            if (mode === "programmer") {
-                return programmerHistory;
-            }
-            return standardHistory;
-        }
-
-        function applyEquationFromHistoryItem(item) {
-            if (!item || typeof item.equation !== "string") {
-                return;
-            }
-            if (activeFloor === "programmer") {
-                if (item.base && ["HEX", "DEC", "BIN", "OCT"].includes(item.base)) {
-                    programmerBase = item.base;
-                    updateProgrammerBaseUI();
-                }
-                if ([8, 16, 32, 64].includes(Number(item.word_size))) {
-                    programmerWordSize = Number(item.word_size);
-                }
-                updateProgrammerHeaderTools();
-                programmerExpression = item.equation;
-                formatProgrammerDisplay();
-            } else {
-                display.value = item.equation;
-                setCaret(display.value.length);
-            }
-            triggerHistoryBlink();
-        }
-
-        function triggerHistoryBlink() {
-            display.classList.remove("history-loaded-blink");
-            void display.offsetWidth;
-            display.classList.add("history-loaded-blink");
-            setTimeout(() => {
-                display.classList.remove("history-loaded-blink");
-            }, 220);
-        }
-
-        function navigateEquationHistory(direction) {
-            const mode = getActiveHistoryMode();
-            const modeHistory = getModeHistoryFromStorage(mode);
-            if (modeHistory.length === 0) {
-                return;
-            }
-
-            if (historyPointer === -1) {
-                historyDraft = activeFloor === "programmer" ? programmerExpression : display.value;
-            }
-
-            if (direction === "prev") {
-                if (historyPointer + 1 >= modeHistory.length) {
-                    return;
-                }
-                historyPointer += 1;
-            } else if (direction === "next") {
-                historyPointer -= 1;
-                if (historyPointer < -1) {
-                    historyPointer = -1;
-                }
-            }
-
-            if (historyPointer === -1) {
-                if (activeFloor === "programmer") {
-                    programmerExpression = "";
-                    formatProgrammerDisplay();
-                } else {
-                    display.value = "";
-                    setCaret(display.value.length);
-                }
-                return;
-            }
-
-            applyEquationFromHistoryItem(modeHistory[historyPointer]);
-        }
-
-        function normalizeHistoryLimit(value) {
-            const parsedLimit = Number(value);
-            if (HISTORY_LIMIT_OPTIONS.includes(parsedLimit)) {
-                return parsedLimit;
-            }
-            return 50;
-        }
-
-        function persistHistoryLimit() {
-            localStorage.setItem(HISTORY_LIMIT_KEY, String(historyLimit));
-        }
-
-        function applyHistoryLimit() {
-            if (standardHistory.length > historyLimit) {
-                standardHistory = standardHistory.slice(0, historyLimit);
-            }
-            if (programmerHistory.length > historyLimit) {
-                programmerHistory = programmerHistory.slice(0, historyLimit);
-            }
-            historyLimitButtons.forEach((button) => {
-                const buttonLimit = Number(button.dataset.limit);
-                button.classList.toggle("active", buttonLimit === historyLimit);
-            });
-        }
-
-        function renderHistory() {
-            const activeMode = getActiveHistoryMode();
-            const activeHistory = getActiveHistory();
-
-            historyList.innerHTML = "";
-            if (drawerCurrentView === "sub") {
-                drawerTitle.textContent = getHistoryViewTitle();
-            }
-            historyEmpty.style.display = activeHistory.length === 0 ? "block" : "none";
-
-            activeHistory.forEach((item) => {
-                const listItem = document.createElement("li");
-                listItem.className = "history-item";
-                listItem.dataset.equation = item.equation;
-                listItem.dataset.mode = activeMode;
-                if (item.base) {
-                    listItem.dataset.base = item.base;
-                }
-                if (item.word_size) {
-                    listItem.dataset.wordSize = String(item.word_size);
-                }
-
-                const equationSpan = document.createElement("span");
-                equationSpan.className = "history-equation";
-                const programmerMeta = activeMode === "programmer" && item.base
-                    ? ` [${item.base}/${item.word_size || 32}-bit]`
-                    : "";
-                equationSpan.textContent = `${item.equation} = ${item.result}${programmerMeta}`;
-
-                listItem.appendChild(equationSpan);
-                historyList.appendChild(listItem);
-            });
-        }
-
-        async function loadHistoryFromStorage() {
-            historyLimit = normalizeHistoryLimit(localStorage.getItem(HISTORY_LIMIT_KEY));
-            await refreshHistoryFromDb();
-            applyHistoryLimit();
-            renderHistory();
-        }
-
-        async function addHistoryItem(equation, result, context = null) {
-            const activeMode = getActiveHistoryMode();
-            await saveHistoryEntryToDb(activeMode, equation, result, context);
-            await refreshHistoryFromDb(activeMode);
-            renderHistory();
-        }
-
-        async function clearHistory() {
-            const activeMode = getActiveHistoryMode();
-            const response = await fetch("/clear_history", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ mode: activeMode })
-            });
-            if (!response.ok) {
-                return;
-            }
-            setActiveHistory([]);
-            await refreshHistoryFromDb(activeMode);
-            renderHistory();
-        }
-
-        function setCaret(position) {
-            const safePosition = Math.max(0, Math.min(position, display.value.length));
-            display.setSelectionRange(safePosition, safePosition);
-            focusDisplay();
-            syncScrollToCaret(safePosition);
-        }
-
-        function syncScrollToCaret(position = getCaretPosition()) {
-            const length = display.value.length;
-            if (position <= 0) {
-                display.scrollLeft = 0;
-                return;
-            }
-            if (position >= length) {
-                display.scrollLeft = display.scrollWidth;
-            }
-        }
-
-        function getCaretPosition() {
-            return display.selectionStart ?? display.value.length;
-        }
-
-        function insertAtCaret(text) {
-            const start = display.selectionStart ?? display.value.length;
-            const end = display.selectionEnd ?? display.value.length;
-            const before = display.value.slice(0, start);
-            const after = display.value.slice(end);
-            display.value = `${before}${text}${after}`;
-            setCaret(start + text.length);
-        }
-
-        function insertNthRootTemplate() {
-            const template = "ⁿ√(, )";
-            const start = display.selectionStart ?? display.value.length;
-            const end = display.selectionEnd ?? display.value.length;
-            const before = display.value.slice(0, start);
-            const after = display.value.slice(end);
-            display.value = `${before}${template}${after}`;
-            setCaret(start + 3);
-        }
-
-        function replaceWithCaretTracking(value, caretPosition, target, replacement) {
-            let updatedValue = value;
-            let updatedCaret = caretPosition;
-            let matchIndex = updatedValue.indexOf(target);
-
-            while (matchIndex !== -1) {
-                updatedValue = `${updatedValue.slice(0, matchIndex)}${replacement}${updatedValue.slice(matchIndex + target.length)}`;
-                if (matchIndex < updatedCaret) {
-                    updatedCaret += replacement.length - target.length;
-                }
-                matchIndex = updatedValue.indexOf(target, matchIndex + replacement.length);
-            }
-
-            return { value: updatedValue, caret: updatedCaret };
-        }
-
-        function normalizeDisplayNotation() {
-            const caret = getCaretPosition();
-            let normalized = { value: display.value, caret: caret };
-            normalized = replaceWithCaretTracking(normalized.value, normalized.caret, "root(", "ⁿ√(");
-            normalized = replaceWithCaretTracking(normalized.value, normalized.caret, "sqrt(", "√(");
-            normalized = replaceWithCaretTracking(normalized.value, normalized.caret, "n√(", "ⁿ√(");
-            if (normalized.value !== display.value) {
-                display.value = normalized.value;
-                setCaret(normalized.caret);
-            }
-        }
-
-        function replaceRange(start, end, replacement) {
-            const before = display.value.slice(0, start);
-            const after = display.value.slice(end);
-            display.value = `${before}${replacement}${after}`;
-            setCaret(start + replacement.length);
-        }
-
-        function getSmartTargetRange() {
-            const selectionStart = display.selectionStart ?? display.value.length;
-            const selectionEnd = display.selectionEnd ?? display.value.length;
-
-            if (selectionStart !== selectionEnd) {
-                return { start: selectionStart, end: selectionEnd };
-            }
-
-            let end = selectionStart;
-            while (end > 0 && /\s/.test(display.value[end - 1])) {
-                end -= 1;
-            }
-            if (end === 0) {
-                return null;
-            }
-
-            const lastChar = display.value[end - 1];
-            if (lastChar === ")") {
-                let depth = 0;
-                for (let i = end - 1; i >= 0; i -= 1) {
-                    const current = display.value[i];
-                    if (current === ")") {
-                        depth += 1;
-                    } else if (current === "(") {
-                        depth -= 1;
-                        if (depth === 0) {
-                            let start = i;
-                            while (start > 0 && /[A-Za-z]/.test(display.value[start - 1])) {
-                                start -= 1;
-                            }
-                            return { start: start, end: end };
-                        }
-                    }
-                }
-            }
-
-            let start = end - 1;
-            while (start >= 0 && /[0-9A-Za-z_.π]/.test(display.value[start])) {
-                start -= 1;
-            }
-            start += 1;
-
-            if (start >= end) {
-                return null;
-            }
-            return { start: start, end: end };
-        }
-
-        function applySmartWrap(mode) {
-            const targetRange = getSmartTargetRange();
-            if (!targetRange) {
-                if (mode === "power2") {
-                    insertAtCaret("^2");
-                } else if (mode === "power3") {
-                    insertAtCaret("^3");
-                } else if (mode === "reciprocal") {
-                    insertAtCaret("1/(");
-                } else if (mode === "absolute") {
-                    insertAtCaret("abs(");
-                } else if (mode === "factorial") {
-                    insertAtCaret("factorial(");
-                }
-                return;
-            }
-
-            const targetText = display.value.slice(targetRange.start, targetRange.end).trim();
-            if (!targetText) {
-                return;
-            }
-
-            if (mode === "power2") {
-                replaceRange(targetRange.start, targetRange.end, `(${targetText})^2`);
-            } else if (mode === "power3") {
-                replaceRange(targetRange.start, targetRange.end, `(${targetText})^3`);
-            } else if (mode === "reciprocal") {
-                replaceRange(targetRange.start, targetRange.end, `1/(${targetText})`);
-            } else if (mode === "absolute") {
-                replaceRange(targetRange.start, targetRange.end, `abs(${targetText})`);
-            } else if (mode === "factorial") {
-                replaceRange(targetRange.start, targetRange.end, `factorial(${targetText})`);
-            }
-        }
-
-        function removeBeforeCaret() {
-            const start = display.selectionStart ?? display.value.length;
-            const end = display.selectionEnd ?? display.value.length;
-
-            if (start !== end) {
-                const before = display.value.slice(0, start);
-                const after = display.value.slice(end);
-                display.value = `${before}${after}`;
-                setCaret(start);
-                return;
-            }
-
-            if (start === 0) {
-                return;
-            }
-
-            const before = display.value.slice(0, start - 1);
-            const after = display.value.slice(start);
-            display.value = `${before}${after}`;
-            setCaret(start - 1);
-        }
-
-        function getTrigFunction(baseName) {
-            if (isInvActive && isHypActive) {
-                return `a${baseName}h`;
-            }
-            if (isInvActive) {
-                return `a${baseName}`;
-            }
-            if (isHypActive) {
-                return `${baseName}h`;
-            }
-            return baseName;
-        }
-
-        function updateTrigLabels() {
-            trigButtons.forEach((button) => {
-                const baseName = button.dataset.base;
-                button.textContent = getTrigFunction(baseName);
-            });
-            invButton.classList.toggle("active", isInvActive);
-            hypButton.classList.toggle("active", isHypActive);
-        }
-
-        function resetTrigModes() {
-            isInvActive = false;
-            isHypActive = false;
-            updateTrigLabels();
-        }
-
-        function updateAngleModeUI() {
-            angleModeButton.textContent = angleMode;
-            angleModeButton.classList.toggle("active", angleMode === "RAD");
-            if (activeFloor !== "programmer") {
-                displayLabel.textContent = `Scientific Calculator (${angleMode})`;
-            }
-        }
-
-        function formatProgrammerDisplay() {
-            display.value = programmerExpression;
-            setCaret(display.value.length);
-        }
-
-        function updateProgrammerHeaderTools() {
-            programmerFloorBadge.textContent = isProgrammerSecondFloor ? "2nd" : "1st";
-            programmerFloorBadge.classList.toggle("floor-primary", !isProgrammerSecondFloor);
-            programmerFloorBadge.classList.toggle("floor-secondary", isProgrammerSecondFloor);
-            programmerBaseIndicator.textContent = programmerBase;
-            programmerWordSizeSelect.value = String(programmerWordSize);
-            programmerHeaderTools.classList.toggle("hidden-programmer-tools", activeFloor !== "programmer");
-        }
-
-        function toBaseString(value, base) {
-            if (base === "HEX") {
-                return value.toString(16).toUpperCase();
-            }
-            if (base === "BIN") {
-                return value.toString(2);
-            }
-            if (base === "OCT") {
-                return value.toString(8);
-            }
-            return value.toString(10);
-        }
-
-        function tryParseSimpleProgrammerValue() {
-            const normalized = programmerExpression.trim().toUpperCase();
-            if (!normalized || !/^-?[0-9A-F]+$/.test(normalized)) {
-                return null;
-            }
-
-            const baseMap = { HEX: 16, DEC: 10, BIN: 2, OCT: 8 };
-            const selectedBase = baseMap[programmerBase];
-            const isNegative = normalized.startsWith("-");
-            const unsigned = isNegative ? normalized.slice(1) : normalized;
-            const parsed = parseInt(unsigned, selectedBase);
-            if (Number.isNaN(parsed)) {
-                return null;
-            }
-            return isNegative ? -parsed : parsed;
-        }
-
-        function normalizeToWordSize(value) {
-            const mask = (2 ** programmerWordSize) - 1;
-            return value & mask;
-        }
-
-        function updateProgrammerBaseUI() {
-            programmerBaseButtons.forEach((button) => {
-                button.classList.toggle("active", button.dataset.base === programmerBase);
-            });
-
-            const allowedCharactersByBase = {
-                BIN: "01",
-                OCT: "01234567",
-                DEC: "0123456789",
-                HEX: "0123456789ABCDEF"
-            };
-            const allowedCharacters = allowedCharactersByBase[programmerBase];
-
-            programmerDigitButtons.forEach((button) => {
-                const token = button.dataset.token;
-                const isAllowed = allowedCharacters.includes(token);
-                button.disabled = !isAllowed;
-                button.classList.toggle("hidden-programmer-token", !isAllowed);
-            });
-
-            const isHexMode = programmerBase === "HEX";
-            programmerHexButtons.forEach((button) => {
-                button.classList.toggle("hidden-programmer-token", !isHexMode);
-                button.disabled = !isHexMode;
-            });
-        }
-
-        function updateProgrammerOperationFloor() {
-            programmerPrimaryFloor.classList.toggle("hidden", isProgrammerSecondFloor);
-            programmerSecondaryFloor.classList.toggle("hidden", !isProgrammerSecondFloor);
-            updateProgrammerHeaderTools();
-        }
-
-        function convertSimpleProgrammerValue(nextBase) {
-            const parsed = tryParseSimpleProgrammerValue();
-            if (parsed === null) {
-                return;
-            }
-
-            const wrappedValue = normalizeToWordSize(parsed);
-            programmerExpression = toBaseString(wrappedValue, nextBase);
-        }
-
-        function applyWordSizeToSimpleValue() {
-            const parsed = tryParseSimpleProgrammerValue();
-            if (parsed === null) {
-                return;
-            }
-            const wrappedValue = normalizeToWordSize(parsed);
-            programmerExpression = toBaseString(wrappedValue, programmerBase);
-        }
-
-        function runDisplayModeSwitchAnimation(nextText = "") {
-            display.classList.add("mode-switching");
-            setTimeout(() => {
-                display.value = nextText;
-                setCaret(display.value.length);
-                display.classList.remove("mode-switching");
-            }, 110);
-        }
-
-        function saveCurrentDisplaySnapshotToHistory() {
-            const rawValue = display.value.trim();
-            if (!rawValue || rawValue === "Syntax Error") {
-                return;
-            }
-
-            if (activeFloor === "programmer") {
-                addHistoryItem(rawValue, rawValue, {
-                    base: programmerBase,
-                    word_size: programmerWordSize
-                }).catch(() => {});
-            } else {
-                addHistoryItem(rawValue, rawValue).catch(() => {});
-            }
-        }
-
-        function switchFloor(mode) {
-            const previousFloor = activeFloor;
-            const isCrossModeSwitch =
-                (previousFloor === "programmer" && mode !== "programmer")
-                || (previousFloor !== "programmer" && mode === "programmer");
-
-            if (isCrossModeSwitch) {
-                saveCurrentDisplaySnapshotToHistory();
-            }
-
-            activeFloor = mode;
-            floorOne.classList.toggle("hidden", mode !== "main");
-            floorTwo.classList.toggle("hidden", mode !== "scientific");
-            floorThree.classList.toggle("hidden", mode !== "programmer");
-
-            if (mode === "programmer") {
-                displayLabel.textContent = "Programmer Calculator";
-                if (previousFloor !== "programmer") {
-                    programmerBase = "DEC";
-                    isProgrammerSecondFloor = false;
-                }
-                updateProgrammerOperationFloor();
-                updateProgrammerHeaderTools();
-                if (isCrossModeSwitch) {
-                    programmerExpression = "";
-                    runDisplayModeSwitchAnimation("");
-                } else {
-                    formatProgrammerDisplay();
-                }
-                updateProgrammerBaseUI();
-            } else {
-                updateAngleModeUI();
-                updateProgrammerHeaderTools();
-                if (isCrossModeSwitch) {
-                    runDisplayModeSwitchAnimation("");
-                }
-            }
-            renderHistory();
-            resetEquationNavigation();
-            updateDrawerModeText();
-            focusDisplay();
-        }
-
-        async function evaluateEquation() {
-            const equation = display.value.trim();
-            if (!equation) {
-                return;
-            }
-
-            try {
-                const response = await fetch("/calculate", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ equation: equation, angle_mode: angleMode })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || "Syntax Error");
-                }
-                const resultText = String(data.result);
-                display.value = resultText;
-                await refreshHistoryFromDb("standard");
-                renderHistory();
-                resetEquationNavigation();
-            } catch (error) {
-                display.value = "Syntax Error";
-                resetEquationNavigation();
-            }
-
-            setCaret(display.value.length);
-        }
-
-        async function evaluateProgrammerEquation() {
-            const equation = programmerExpression.trim();
-            if (!equation) {
-                return;
-            }
-
-            try {
-                const response = await fetch("/calculate_programmer", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        equation: equation,
-                        number_base: programmerBase,
-                        word_size: programmerWordSize
-                    })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || "Syntax Error");
-                }
-                programmerExpression = String(data.result);
-                await refreshHistoryFromDb("programmer");
-                renderHistory();
-                resetEquationNavigation();
-            } catch (error) {
-                programmerExpression = "Syntax Error";
-                resetEquationNavigation();
-            }
-
-            formatProgrammerDisplay();
-        }
-
-        function insertProgrammerToken(token) {
-            if (programmerExpression === "Syntax Error") {
-                programmerExpression = "";
-            }
-            const allowedCharactersByBase = {
-                BIN: "01",
-                OCT: "01234567",
-                DEC: "0123456789",
-                HEX: "0123456789ABCDEF"
-            };
-            if (/^[0-9A-F]$/.test(token) && !allowedCharactersByBase[programmerBase].includes(token)) {
-                return;
-            }
-            if (token === "NOT") {
-                programmerExpression += "~";
-            } else if (token === "AND") {
-                programmerExpression += "&";
-            } else if (token === "OR") {
-                programmerExpression += "|";
-            } else if (token === "XOR") {
-                programmerExpression += "^";
-            } else if (token === "LSH") {
-                programmerExpression += "<<";
-            } else if (token === "RSH") {
-                programmerExpression += ">>";
-            } else {
-                programmerExpression += token;
-            }
-            formatProgrammerDisplay();
-        }
-
-        function createRipple(event) {
-            const button = event.currentTarget;
-            const ripple = document.createElement("span");
-            ripple.classList.add("ripple");
-
-            const rect = button.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            ripple.style.width = `${size}px`;
-            ripple.style.height = `${size}px`;
-            ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
-            ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
-
-            button.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 450);
-        }
-
-        async function executeAction(action, value) {
-            if (action === "insert") {
-                resetEquationNavigation();
-                insertAtCaret(value);
-            } else if (action === "insert-nth-root") {
-                resetEquationNavigation();
-                insertNthRootTemplate();
-            } else if (action === "clear") {
-                display.value = "";
-                setCaret(0);
-                resetEquationNavigation();
-            } else if (action === "backspace") {
-                resetEquationNavigation();
-                removeBeforeCaret();
-            } else if (action === "equals") {
-                await evaluateEquation();
-            } else if (action === "cursor-left") {
-                setCaret(getCaretPosition() - 1);
-            } else if (action === "cursor-right") {
-                setCaret(getCaretPosition() + 1);
-            } else if (action === "cursor-start") {
-                setCaret(0);
-            } else if (action === "cursor-end") {
-                setCaret(display.value.length);
-            } else if (action === "history-prev") {
-                navigateEquationHistory("prev");
-            } else if (action === "history-next") {
-                navigateEquationHistory("next");
-            } else if (action === "toggle-inv") {
-                isInvActive = !isInvActive;
-                updateTrigLabels();
-            } else if (action === "toggle-hyp") {
-                isHypActive = !isHypActive;
-                updateTrigLabels();
-            } else if (action === "reset-trig") {
-                resetTrigModes();
-            } else if (action === "toggle-angle-mode") {
-                angleMode = angleMode === "DEG" ? "RAD" : "DEG";
-                updateAngleModeUI();
-            } else if (action === "trig") {
-                resetEquationNavigation();
-                insertAtCaret(`${getTrigFunction(value)}(`);
-            } else if (action === "smart-wrap") {
-                resetEquationNavigation();
-                applySmartWrap(value);
-            } else if (action === "show-scientific") {
-                switchFloor("scientific");
-            } else if (action === "show-main") {
-                switchFloor("main");
-            } else if (action === "programmer-insert") {
-                resetEquationNavigation();
-                insertProgrammerToken(value);
-            } else if (action === "programmer-clear") {
-                programmerExpression = "";
-                formatProgrammerDisplay();
-                resetEquationNavigation();
-            } else if (action === "programmer-backspace") {
-                resetEquationNavigation();
-                programmerExpression = programmerExpression.slice(0, -1);
-                formatProgrammerDisplay();
-            } else if (action === "programmer-equals") {
-                await evaluateProgrammerEquation();
-            } else if (action === "set-programmer-base") {
-                if (value !== programmerBase) {
-                    resetEquationNavigation();
-                    convertSimpleProgrammerValue(value);
-                    programmerBase = value;
-                    updateProgrammerBaseUI();
-                    updateProgrammerHeaderTools();
-                    formatProgrammerDisplay();
-                }
-            } else if (action === "toggle-programmer-floor") {
-                isProgrammerSecondFloor = !isProgrammerSecondFloor;
-                updateProgrammerOperationFloor();
-            }
-        }
-
-        buttons.forEach((button) => {
-            button.addEventListener("click", async (event) => {
-                createRipple(event);
-                const action = button.dataset.action;
-                const value = button.dataset.value || button.dataset.token || button.dataset.base || button.dataset.wrap;
-                await executeAction(action, value);
-            });
-        });
-
-        document.addEventListener("keydown", async (event) => {
-            if (event.target !== display) {
-                focusDisplay();
-            }
-
-            const key = event.key;
-            const ctrlOrMeta = event.ctrlKey || event.metaKey;
-            const isAllowedCharacter = /^[0-9+\-*/^%()., ]$/.test(key) || key === "√";
-            const isArrowKey = key === "ArrowLeft" || key === "ArrowRight" || key === "ArrowUp" || key === "ArrowDown";
-            const isAllowedControl = key === "Backspace" || key === "Enter" || isArrowKey;
-
-            if (activeFloor === "programmer") {
-                const upperKey = key.toUpperCase();
-                const programmerKeyMap = {
-                    "&": "AND",
-                    "|": "OR",
-                    "^": "XOR",
-                    "~": "NOT",
-                    "+": "+",
-                    "-": "-",
-                    "*": "*",
-                    "/": "/"
-                };
-                if (key === "Enter") {
-                    event.preventDefault();
-                    await executeAction("programmer-equals");
-                    return;
-                }
-                if (key === "Backspace") {
-                    event.preventDefault();
-                    await executeAction("programmer-backspace");
-                    return;
-                }
-                if (key === "ArrowUp") {
-                    event.preventDefault();
-                    await executeAction("history-prev");
-                    return;
-                }
-                if (key === "ArrowDown") {
-                    event.preventDefault();
-                    await executeAction("history-next");
-                    return;
-                }
-                if (/[0-9]/.test(key) || /[A-F]/.test(upperKey)) {
-                    event.preventDefault();
-                    await executeAction("programmer-insert", upperKey);
-                    return;
-                }
-                if (programmerKeyMap[key]) {
-                    event.preventDefault();
-                    await executeAction("programmer-insert", programmerKeyMap[key]);
-                    return;
-                }
-                if (key === "<" || key === ">") {
-                    event.preventDefault();
-                    return;
-                }
-                if (key === "Escape") {
-                    return;
-                }
-                event.preventDefault();
-                return;
-            }
-
-            if (ctrlOrMeta && key === "2") {
-                event.preventDefault();
-                await executeAction("smart-wrap", "power2");
-                return;
-            }
-
-            if (ctrlOrMeta && key === "3") {
-                event.preventDefault();
-                await executeAction("smart-wrap", "power3");
-                return;
-            }
-
-            if (ctrlOrMeta && key.toLowerCase() === "r") {
-                event.preventDefault();
-                await executeAction("smart-wrap", "reciprocal");
-                return;
-            }
-
-            if (ctrlOrMeta && key.toLowerCase() === "a") {
-                event.preventDefault();
-                await executeAction("smart-wrap", "absolute");
-                return;
-            }
-
-            if (ctrlOrMeta && key.toLowerCase() === "f") {
-                event.preventDefault();
-                await executeAction("smart-wrap", "factorial");
-                return;
-            }
-
-            if (key === "Enter") {
-                event.preventDefault();
-                await executeAction("equals");
-                return;
-            }
-
-            if (key === "ArrowLeft") {
-                return;
-            }
-
-            if (key === "ArrowRight") {
-                return;
-            }
-
-            if (key === "ArrowUp") {
-                event.preventDefault();
-                await executeAction("history-prev");
-                return;
-            }
-
-            if (key === "ArrowDown") {
-                event.preventDefault();
-                await executeAction("history-next");
-                return;
-            }
-
-            if (key === "Backspace") {
-                event.preventDefault();
-                await executeAction("backspace");
-                return;
-            }
-
-            if (!isAllowedCharacter && !isAllowedControl) {
-                event.preventDefault();
-            }
-        });
-
-        display.addEventListener("input", () => {
-            if (activeFloor === "programmer") {
-                resetEquationNavigation();
-                formatProgrammerDisplay();
-                return;
-            }
-            resetEquationNavigation();
-            normalizeDisplayNotation();
-        });
-
-        drawerButton.addEventListener("click", () => {
-            toggleDrawer();
-        });
-
-        drawerCloseButton.addEventListener("click", () => {
-            toggleDrawer(false);
-            focusDisplay();
-        });
-
-        drawerOverlay.addEventListener("click", () => {
-            toggleDrawer(false);
-            focusDisplay();
-        });
-
-        drawerThemeItem.addEventListener("click", () => {
-            toggleTheme();
-            toggleDrawer(false);
-            focusDisplay();
-        });
-
-        drawerHistoryItem.addEventListener("click", () => {
-            refreshHistoryFromDb(getActiveHistoryMode())
-                .then(() => {
-                    renderHistory();
-                    switchToView("sub");
-                    focusDisplay();
-                })
-                .catch(() => {
-                    switchToView("sub");
-                    focusDisplay();
-                });
-        });
-
-        drawerProgrammerItem.addEventListener("click", () => {
-            if (activeFloor === "programmer") {
-                switchFloor("main");
-            } else {
-                switchFloor("programmer");
-            }
-            toggleDrawer(false);
-            focusDisplay();
-        });
-
-        drawerProfileItem.addEventListener("click", () => {
-            window.location.href = "/profile";
-        });
-
-        drawerLogoutItem.addEventListener("click", () => {
-            window.location.href = "/logout";
-        });
-
-        drawerBackButton.addEventListener("click", () => {
-            switchToView("main");
-            focusDisplay();
-        });
-
-        clearHistoryButton.addEventListener("click", async () => {
-            await clearHistory();
-            focusDisplay();
-        });
-
-        historyLimitButtons.forEach((button) => {
-            button.addEventListener("click", async () => {
-                historyLimit = normalizeHistoryLimit(button.dataset.limit);
-                persistHistoryLimit();
-                await refreshHistoryFromDb();
-                applyHistoryLimit();
-                renderHistory();
-                focusDisplay();
-            });
-        });
-
-        historyList.addEventListener("click", (event) => {
-            const historyItem = event.target.closest(".history-item");
-            if (!historyItem) {
-                return;
-            }
-            const itemMode = historyItem.dataset.mode || getActiveHistoryMode();
-            if (itemMode === "programmer") {
-                const itemBase = historyItem.dataset.base;
-                const itemWordSize = Number(historyItem.dataset.wordSize || programmerWordSize);
-                if (itemBase && ["HEX", "DEC", "BIN", "OCT"].includes(itemBase)) {
-                    programmerBase = itemBase;
-                }
-                if ([8, 16, 32, 64].includes(itemWordSize)) {
-                    programmerWordSize = itemWordSize;
-                }
-                updateProgrammerBaseUI();
-                updateProgrammerHeaderTools();
-                programmerExpression = historyItem.dataset.equation || "";
-                formatProgrammerDisplay();
-            } else {
-                display.value = historyItem.dataset.equation || "";
-                setCaret(display.value.length);
-            }
-            switchToView("main");
-            focusDisplay();
-        });
-
-        programmerWordSizeSelect.addEventListener("change", () => {
-            programmerWordSize = Number(programmerWordSizeSelect.value);
-            applyWordSizeToSimpleValue();
-            formatProgrammerDisplay();
-            focusDisplay();
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                toggleDrawer(false);
-            }
-        });
-
-        async function initializeApp() {
-            loadThemePreference();
-            await loadHistoryFromStorage();
-            updateProgrammerBaseUI();
-            updateProgrammerHeaderTools();
-            updateProgrammerOperationFloor();
-            updateDrawerModeText();
-            updateTrigLabels();
-            updateAngleModeUI();
-            setCaret(display.value.length);
-        }
-
-        initializeApp();
-    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
